@@ -7,12 +7,17 @@ SOURCE_PATH = 'outputs/bronze/czech_bank/'
 EXP_PATH = 'outputs/silver/czech_bank/'
 
 def account_model():
+    # reading in DFs
     account_df = pd.read_parquet(f"{SOURCE_PATH}account.parquet")
-    account_df.rename(columns={'district_id':'district_id_account','date':'account_date'}, inplace=True)
     district_df = pd.read_parquet(f'{SOURCE_PATH}district.parquet')
     loan_df = pd.read_parquet(f'{SOURCE_PATH}loan.parquet')
-    loan_df.rename(columns={'date':'loan_date'}, inplace=True)
     card_df = pd.read_parquet(f'{SOURCE_PATH}card.parquet')
+    
+    account_df.rename(columns={'district_id':'district_id_account','date':'account_date'}, inplace=True)
+    
+    
+    loan_df.rename(columns={'date':'loan_date'}, inplace=True)
+    
     card_df.rename(columns={'issued':'card_issue_date'}, inplace=True)
     disp_df = pd.read_parquet(f'{SOURCE_PATH}disp.parquet')
     disp_df.rename(columns={'type':'disp_type'}, inplace=True)
