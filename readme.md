@@ -21,6 +21,7 @@ Once the .venv is active and you are in the working directory, the job can be ru
 ```python main.py```
 
 
+The job will generate a new directory named `outputs` inside the src folder that will contain subdirectories with the outputs from each step of the pipeline, raw, bronze, silver, gold, and samples.
 
 ## Project Notes
 
