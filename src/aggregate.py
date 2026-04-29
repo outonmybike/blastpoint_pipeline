@@ -6,17 +6,19 @@ SOURCE_PATH = 'outputs/silver/czech_bank/'
 EXP_PATH = 'outputs/gold/czech_bank/'
 
 def account_monthly_profile():
+    # read in DFs
     og_df = pd.read_parquet(f"{SOURCE_PATH}transaction_model.parquet")
     owner_og_df = pd.read_parquet(f"{SOURCE_PATH}account_model.parquet")
 
     og_df['month'] = og_df['date'].values.astype('datetime64[M]')
+    # end of month balance logic
     eom_bal_df = og_df.query('last_of_day == 1').copy()
     eom_bal_df['rn'] = (eom_bal_df.sort_values('date', ascending=False).groupby(['account_id', 'month']).cumcount())
-
     eom_bal_df = eom_bal_df.query('rn == 0').copy()
     eom_bal_df = eom_bal_df[['account_id','month','balance']]
     eom_bal_df.rename(columns={'balance':'end_of_month_balance'}, inplace=True)
     
+    # calculated field logic
     credit_df = og_df.query('type == "credit"').copy()
     credit_df = credit_df.groupby(['account_id','month']).agg(total_credits=('amount','sum'))
     debit_df = og_df.query('type == "debit"').copy()
@@ -35,7 +37,6 @@ def account_monthly_profile():
     months_df = months_df[months_df['month']>= months_df['account_date']]
 
     base_df = months_df[['account_id','month']].drop_duplicates()
-  
     base_df = pd.merge(base_df,credit_df, on=['account_id','month'], how='left')
     base_df['total_credits'] = base_df['total_credits'].fillna(0)
     base_df = pd.merge(base_df,debit_df, on=['account_id','month'], how='left')
@@ -59,9 +60,9 @@ def account_monthly_profile():
 
 def regional_segment_summary():
     amp_df = pd.read_parquet(f"{EXP_PATH}account_monthly_profile.parquet")
-    amp_df['year'] = amp_df['month'].dt.year
-
     am_df = pd.read_parquet(f"{SOURCE_PATH}account_model.parquet")
+
+    amp_df['year'] = amp_df['month'].dt.year
     am_df['default'] = (am_df['loan_status_category'] == 'bad').astype(int)
     am_df['gold_holder'] = (am_df['type'] == 'gold').astype(int)
 
